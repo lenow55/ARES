@@ -33,6 +33,7 @@ def get_embedding(text: str, model: str = "text-embedding-ada-002") -> list:
     """
     # Set OpenAI's API key and API base to use vLLM's API server.
     openai_api_key = os.getenv("OPENAI_API_KEY")
+    host_url = os.getenv("OPENAI_HOST_URL")
     
     client = OpenAI(
         api_key=openai_api_key,
