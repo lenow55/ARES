@@ -30,7 +30,13 @@ def get_embedding(text: str, model: str = "text-embedding-ada-002") -> list:
     Returns:
     list: A list representing the embedding of the input text.
     """
-    client = OpenAI()
+    # Set OpenAI's API key and API base to use vLLM's API server.
+    openai_api_key = os.getenv("OPENAI_API_KEY")
+    
+    client = OpenAI(
+        api_key=openai_api_key,
+        base_url=host_url
+    )
     
     # Replace newline characters with spaces
     text = text.replace("\n", " ")
