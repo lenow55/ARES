@@ -100,17 +100,20 @@ def load_model(model_choice: str, api_model: bool, vllm: bool) -> tuple:
         tuple: A tuple containing the model, tokenizer, and device.
     """
 
-    if api_model: 
+    if api_model:
         return model_choice, None, None
 
     if vllm:
         tokenizer = AutoTokenizer.from_pretrained(model_choice)
+        model_max_length = os.getenv("MAX_MODEL_LENGTH")
+        if model_max_length:
+            tokenizer.model_max_length = int(model_max_length)
         return model_choice, tokenizer, None
 
     if "Llama" in model_choice:
         tokenizer = AutoTokenizer.from_pretrained(model_choice)
         model = AutoModelForCausalLM.from_pretrained(model_choice)
-    else:   
+    else:
         tokenizer = AutoTokenizer.from_pretrained(model_choice)
         model = AutoModelForSeq2SeqLM.from_pretrained(model_choice)
 
@@ -121,8 +124,9 @@ def load_model(model_choice: str, api_model: bool, vllm: bool) -> tuple:
     # Set the device to CUDA if available
     device = torch.device("cuda:0")
     model.to(device)
-    
+
     return model, tokenizer, device
+
 
 def load_documents(document_filepath: str, clean_documents: bool, documents_sampled: int) -> pd.DataFrame:
     """
