@@ -19,7 +19,7 @@ def generate_synthetic_query_vllm_approach(
     max_context_length = tokenizer.model_max_length
 
     # Set OpenAI's API key and API base to use vLLM's API server.
-    openai_api_key = "EMPTY"
+    openai_api_key = os.getenv("OPENAI_API_KEY")
     
     client = OpenAI(
         api_key=openai_api_key,
@@ -100,7 +100,7 @@ def generate_synthetic_answer_vllm_approach(
     max_context_length = tokenizer.model_max_length
 
     # Set OpenAI's API key and API base to use vLLM's API server.
-    openai_api_key = "EMPTY"
+    openai_api_key = os.getenv("OPENAI_API_KEY")
     openai_api_base = host_url
 
     client = OpenAI(
