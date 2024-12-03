@@ -172,10 +172,18 @@ def generate_synthetic_query_azure_approach(document: str, azure_openai_config: 
 
     return synthetic_queries
 
-def generate_synthetic_query_vllm_approach(document: str, synthetic_query_prompt: str, prompt: str, length_of_fewshot_prompt: int, 
-                                          model_name: str, percentiles: list, host_url: str,
-                                          for_fever_dataset=False, for_wow_dataset=False,
-                                          num_queries: int = 3) -> list:
+def generate_synthetic_query_vllm_approach(
+    document: str,
+    synthetic_query_prompt: str,
+    prompt: str,
+    length_of_fewshot_prompt: int,
+    model_name: str,
+    percentiles: list,
+    host_url: str,
+    for_fever_dataset=False,
+    for_wow_dataset=False,
+    num_queries: int = 3,
+) -> list:
     """
     Generates synthetic queries based on a document using an API model.
 
@@ -199,7 +207,9 @@ def generate_synthetic_query_vllm_approach(document: str, synthetic_query_prompt
     synthetic_queries = []
 
     # Construct the prompt without the document based on the dataset type
-    prompt_without_document = prompt + "Example " + str(length_of_fewshot_prompt + 1) + ":\n"
+    prompt_without_document = (
+        prompt + "Example " + str(length_of_fewshot_prompt + 1) + ":\n"
+    )
     prompt_without_document += "Document:"
 
     # Calculate the length of tokens for the prompt and document
@@ -210,7 +220,9 @@ def generate_synthetic_query_vllm_approach(document: str, synthetic_query_prompt
 
     # Check if the total length exceeds the model's maximum input size and truncate if necessary
     if prompt_tokens_length + document_length + 100 >= max_tokens:
-        truncated_document = document[:(max_tokens - prompt_tokens_length - 100) * token_approx_factor]
+        truncated_document = document[
+            : (max_tokens - prompt_tokens_length - 100) * token_approx_factor
+        ]
         prompt_with_document = prompt_without_document + truncated_document
     else:
         prompt_with_document = prompt_without_document + document
@@ -223,12 +235,9 @@ def generate_synthetic_query_vllm_approach(document: str, synthetic_query_prompt
     else:
         prompt_with_document += "\nQuestion: "
 
-    openai_api_key = "EMPTY"
-    client = OpenAI(
-        api_key=openai_api_key,
-        base_url=host_url
-    )
-    
+    openai_api_key = os.getenv("OPENAI_API_KEY")
+    client = OpenAI(api_key=openai_api_key, base_url=host_url)
+
     # Generate queries for each percentile, repeating to reach num_queries
     for _ in range(num_queries):
         for percentile in percentiles:
@@ -237,13 +246,13 @@ def generate_synthetic_query_vllm_approach(document: str, synthetic_query_prompt
                 try:
                     chat_completion = client.chat.completions.create(
                         messages=[
-                        {"role": "system", "content": synthetic_query_prompt},
-                        {"role": "user", "content": prompt_with_document},
-                    ],
-                    model=model_name,
-                    temperature=percentile,
-                    stream=False
-                )
+                            {"role": "system", "content": synthetic_query_prompt},
+                            {"role": "user", "content": prompt_with_document},
+                        ],
+                        model=model_name,
+                        temperature=percentile,
+                        stream=False,
+                    )
                     final_response = chat_completion.choices[0].message.content
 
                     synthetic_queries.append(final_response)
@@ -253,9 +262,12 @@ def generate_synthetic_query_vllm_approach(document: str, synthetic_query_prompt
                     print(f"Error generating synthetic queries: {e}")
 
             if not success:
-                print(f"Failed to generate synthetic queries after 5 attempts for percentile {percentile}")
+                print(
+                    f"Failed to generate synthetic queries after 5 attempts for percentile {percentile}"
+                )
 
     return synthetic_queries
+
 
 
 def generate_synthetic_answer_api_approach(document: str, question: str, synthetic_answer_prompt: str, prompt: str, 
@@ -385,11 +397,21 @@ def generate_synthetic_answer_azure_approach(document: str, question: str, synth
             print(f"Error generating synthetic queries: {e}")
             continue
 
-def generate_synthetic_answer_vllm_approach(document: str, question: str, synthetic_answer_prompt: str, prompt: str, 
-                                           length_of_fewshot_prompt: int, model_name: str, host_url: str, for_fever_dataset=False, 
-                                           for_wow_dataset=False): 
+def generate_synthetic_answer_vllm_approach(
+    document: str,
+    question: str,
+    synthetic_answer_prompt: str,
+    prompt: str,
+    length_of_fewshot_prompt: int,
+    model_name: str,
+    host_url: str,
+    for_fever_dataset=False,
+    for_wow_dataset=False,
+):
     # Construct the prompt without the document based on the dataset type
-    prompt_without_document = prompt + "Example " + str(length_of_fewshot_prompt + 1) + ":\n"
+    prompt_without_document = (
+        prompt + "Example " + str(length_of_fewshot_prompt + 1) + ":\n"
+    )
     if for_fever_dataset:
         prompt_without_document += "Document: \nStatement: \nAnswer: "
     elif for_wow_dataset:
@@ -402,11 +424,13 @@ def generate_synthetic_answer_vllm_approach(document: str, question: str, synthe
     question_length = len(question)
 
     if prompt_tokens_length + document_length + question_length + 100 >= 4096:
-        truncated_document = document[:4096 - prompt_tokens_length - question_length - 100]
+        truncated_document = document[
+            : 4096 - prompt_tokens_length - question_length - 100
+        ]
         prompt = prompt_without_document + truncated_document
-    else: 
-        prompt = prompt_without_document + document 
-    
+    else:
+        prompt = prompt_without_document + document
+
     prompt += "Example" + str(length_of_fewshot_prompt + 1) + ":\n"
     prompt += "Document: " + document + "\n"
     if for_fever_dataset:
@@ -419,35 +443,33 @@ def generate_synthetic_answer_vllm_approach(document: str, question: str, synthe
         prompt += "Question: " + question + "\n"
         prompt += "Answer: "
 
-    openai_api_key = "EMPTY"
-    client = OpenAI(
-        api_key=openai_api_key,
-        base_url=host_url
-    )
-    
+    openai_api_key = os.getenv("OPENAI_API_KEY")
+    client = OpenAI(api_key=openai_api_key, base_url=host_url)
+
     for attempt in range(5):
         try:
             chat_completion = client.chat.completions.create(
                 messages=[
-                {"role": "system", "content": synthetic_answer_prompt},
-                {"role": "user", "content": prompt},
-            ],
-            model=model_name,
-            stream=False
-        )
+                    {"role": "system", "content": synthetic_answer_prompt},
+                    {"role": "user", "content": prompt},
+                ],
+                model=model_name,
+                stream=False,
+            )
             # responses = []
-            
+
             # for chunk in chat_completion:
             #     responses.append(chunk.choices[0].delta.content)
 
             # final_response = " ".join(responses)
 
             final_response = chat_completion.choices[0].message.content
-            
+
             return final_response
         except Exception as e:
             print(f"Error generating synthetic queries: {e}")
             continue
+
 
 def generate_synthetic_contradictory_answers_api_approach(document: str, question: str, synthetic_contradictory_answer_prompt: str, fewshot_examples: str, 
                                            model_name: str, for_fever_dataset=False, for_wow_dataset=False) -> str:
