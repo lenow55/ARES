@@ -319,10 +319,10 @@ def generate_query(document: str, settings: dict) -> list:
         list: List of generated synthetic queries.
     """
 
-    if settings['azure_api_config']:
+    if settings['azure_openai_config']:
         return generate_synthetic_query_azure_approach(
             document, 
-            settings['azure_api_config'],
+            settings['azure_openai_config'],
             settings["synthetic_query_prompt"], 
             settings['few_shot_examples'], 
             settings['length_of_fewshot_prompt'], 
