@@ -81,7 +81,7 @@ def generate_index(dataframe: pd.DataFrame) -> Dataset:
     dataframe['embeddings'] = dataframe["document"].progress_apply(lambda x: get_embedding(x, model='text-embedding-ada-002'))
     
     # Filter out rows where the embedding length is not 1536
-    dataframe = dataframe[dataframe['embeddings'].apply(lambda x: len(x)) == 1536]
+    # dataframe = dataframe[dataframe['embeddings'].apply(lambda x: len(x)) == 1536]
     
     # Convert dataframe to Hugging Face Dataset
     dataset = Dataset.from_pandas(dataframe)
@@ -121,9 +121,9 @@ def filter_synthetic_queries(queries_dataset: pd.DataFrame, document_index) -> p
         question_embedding = np.array(embedding).astype(np.float32)
         
         # Ensure question_embedding is a 2D array with shape (1, 1536)
-        if question_embedding.shape != (1536,):
-            print(f"Warning: Invalid embedding shape {question_embedding.shape} for query '{question}'. Skipping.")
-            continue
+        # if question_embedding.shape != (1536,):
+        #     print(f"Warning: Invalid embedding shape {question_embedding.shape} for query '{question}'. Skipping.")
+        #     continue
         question_embedding = question_embedding.reshape(1, -1)
         
         # Retrieve the nearest examples from the document index
@@ -185,8 +185,8 @@ number_of_negatives_added_ratio: float, lower_bound_for_negatives: int) -> pd.Da
         question_embedding = np.array(get_embedding(question)).astype(np.float32)
         
         # Ensure question_embedding is a 2D array with shape (1, 1536)
-        if question_embedding.shape != (1536,):
-            raise ValueError(f"Expected embedding of shape (1536,), but got {question_embedding.shape}")
+        # if question_embedding.shape != (1536,):
+        #     raise ValueError(f"Expected embedding of shape (1536,), but got {question_embedding.shape}")
 
         question_embedding = question_embedding.reshape(1, -1)
         
